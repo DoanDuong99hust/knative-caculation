@@ -1,0 +1,23 @@
+/usr/bin/python3 /home/fil/filip/hanoi/code/main.py changevalue 10 2 0
+a
+b
+Just to stop the error message
+Scenario: COLD - Started...
+Scenario: WARM - Started...
+/usr/bin/python3 /home/fil/filip/hanoi/code/main.py changevalue 10 2 0
+a
+b
+Just to stop the error message
+Scenario: COLD - Started...
+Scenario: WARM - Started...
+/usr/bin/python3 /home/fil/filip/hanoi/code/main.py changevalue 10 2 0
+a
+b
+Just to stop the error message
+Scenario: COLD - Started...
+/usr/bin/python3 /home/fil/filip/hanoi/code/main.py changevalue 10 2 0
+a
+b
+Just to stop the error message
+Scenario: COLD - Started...
+Scenario: WARM - Started...

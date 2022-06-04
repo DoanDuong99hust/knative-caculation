@@ -1,0 +1,31 @@
+   
+ '''
+ def start_measurement(minutes: int):
+
+     endtime = time.time()+minutes*60
+    #t2=Thread(target = ummeter.start_ummeter(minutes)).start()
+    print("Measurement COLD starts!")
+    timestamps["cald_start"]= time.time()
+    while endtime-time.time()>0:
+        
+        get_prometheus_values(10, "cold")
+        time.sleep(0.5)
+     
+        if (jobs_status["cold_done"] and not jobs_status["warm_done"]):
+            warm_endtime = time.time()+60 #5min x 60
+            print("Measurement WARM starts!")
+            timestamps["warm_start"]= time.time()
+            while warm_endtime-time.time() > 0:
+                get_prometheus_values(10, "warm")
+                time.sleep(0.5)
+            timestamps["cold_start"]= time.time()
+            print("Measurement DELETE_PODS starts!")
+            jobs_status["warm_done"] = True
+            pods.delete_pods()
+            current_job = "delete"
+        elif jobs_status["delete_done"]: break
+    
+    timestamps_to_file()
+    print("Measurement ended!")
+'''
+
