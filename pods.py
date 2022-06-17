@@ -2,7 +2,7 @@ import yaml
 import subprocess
 import main
 
-path_capture_deploy = "/home/fil/filip/hanoi/code/capture_deploy.yaml"
+path_capture_deploy = "/home/controller/knative-caculation/capture_deploy.yaml"
 
 def update_replicas(x: int):
 #opens the capture file and updates the replica values

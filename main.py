@@ -12,6 +12,7 @@ import sys
 import threading
 from multiprocessing import Process
 from multiprocessing.pool import ThreadPool
+from pods import *
 import subprocess
 import os
 import signal
@@ -188,12 +189,15 @@ if __name__ == "__main__":
         #Update replicas
         cmd = UPDATE_REPLICAS_CMD.format(str(target_pods), str(minutes), str(rep))
         start_master(cmd)
+        p0=Process(target=update_replicas, args=rep, daemon=True)
         #p3=Process(target=start_measurement_prometheus_time, args=(target_pods, rep, ), daemon = True)
         p2=Process(target=start_measurement_prometheus, args=(minutes, target_pods, rep, ), daemon = True)
         p1=Process(target=usbmeter.main, args=(target_pods, rep, minutes, ), daemon = True)
         #p3.start()
+        p0.start()
         p1.start()
         p2.start()
+        p0.join()
         p1.join()
         p2.join()
         #p3.join()
