@@ -15,6 +15,7 @@ import matplotlib.animation as animation
 from matplotlib.dates import DayLocator, HourLocator, DateFormatter, drange
 from bluetooth import *
 import csv
+from constants import *
 
 
 # Process socket data from USB meter and extract volts, amps etc.
@@ -47,9 +48,6 @@ def processdata(d):
 
 
 def main(target_pods: int, repetition: int, time_analysis: int):
-
-    #Variables
-    path_out = '/home/luongtrann/hanoi/code/data_ummeter'
     
     try:
         addr = '00:16:A5:00:0F:65'
@@ -89,7 +87,7 @@ def main(target_pods: int, repetition: int, time_analysis: int):
         print('connecting to "{}" on {}:{}'.format(name, host, port))
         res = sock.connect((host, port))
 
-    with open('{}/data_ummeter_{}_{}.csv'.format(path_out, str(target_pods), str(repetition)), 'a+') as f:
+    with open(DATA_UMMETER_FILE_DIRECTORY.format(str(target_pods), str(repetition)), 'a+') as f:
         writer = csv.writer(f)
         writer.writerow(["time", "Volts", "Amps", "Watts"])
         leng = 20
@@ -127,3 +125,6 @@ def main(target_pods: int, repetition: int, time_analysis: int):
         print('Closed')
         sock.close()
     return True
+
+if __name__ == "__main__":
+    main(sys.argv[1],sys.argv[2],sys.argv[3])

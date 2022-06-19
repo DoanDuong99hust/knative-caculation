@@ -52,6 +52,18 @@ def start_master(command:str):
 
     client.close()
 
+def start_pi4(command:str):
+    client = paramiko.SSHClient()
+    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    client.connect(PI_IP, username=PI_USERNAME, password=PI_PASSWORD)
+    print(command)
+    stdin, stdout, stderr = client.exec_command(command)
+
+    for line in stdout:
+        print (line.strip('\n'))
+
+    client.close()
+
 def get_data_from_api(query:str):
     url_data = PROMETHEUS_DOMAIN + query
     try:
@@ -172,6 +184,8 @@ if __name__ == "__main__":
     DELETE_CALCULATION_TIME = sys.argv[3]
     rep = sys.argv[4]
     if sys.argv[1] == "master":
+        # Call to source code at pi4 
+        start_pi4(RUN_UMMETER_AT_PI4_CMD)
         #Update replicas
         # cmd = UPDATE_REPLICAS_CMD.format(str(target_pods), str(WARM_CALCULATION_TIME), str(rep))
         # start_master(cmd)

@@ -3,12 +3,14 @@ from lib2to3.pgen2.token import COLON, SLASH
 
 # HOST IP
 MASTER_HOST = "localhost"
-MASTER_USERNAME = "core"
+MASTER_USERNAME = "controller"
 MASTER_PASSWORD = "1"
-PI_IP = "192.168.101.217"
+PI_IP = "192.168.101.105"
+PI_USERNAME = "pi4knative"
+PI_PASSWORD = "1"
 
-CALCULATING_HOSTNAME = "node1"
-CALCULATING_INSTANCE = "192.168.101.154"
+CALCULATING_HOSTNAME = "server"
+CALCULATING_INSTANCE = "192.168.101.101"
 
 # PORT
 PROMETHEUS_PORT = "8080"
@@ -23,28 +25,32 @@ SERVICE_DOMAIN = "http://detection.default.svc.cluster.local"
 # QUERY
 VALUES_CPU_QUERY = "100-(avg%20by%20(instance,job)(irate(node_cpu_seconds_total{mode='idle',job='node_exporter',instance='"+CALCULATING_INSTANCE+":9100'}[30s])*100))"
 VALUES_PODS_QUERY = "kubelet_running_pods{kubernetes_io_hostname='"+CALCULATING_HOSTNAME+"'}"
-VALUES_MEMORY_QUERY = "(node_memory_MemTotal_bytes{job='node_exporter',instance='"+CALCULATING_INSTANCE+":9100'}-node_memory_MemAvailable_bytes{job='node_exporter',instance='"+CALCULATING_INSTANCE+":9100'})/(1024*1024)"
+VALUES_MEMORY_QUERY = "((node_memory_MemTotal_bytes{job='node_exporter',instance='"+CALCULATING_INSTANCE+":9100'}-node_memory_MemAvailable_bytes{job='node_exporter',instance='"+CALCULATING_INSTANCE+":9100'})/(node_memory_MemTotal_bytes{job='node_exporter',instance='"+CALCULATING_INSTANCE+":9100'}))*100"
 RUNNING_PODS_QUERY = "kubelet_running_pods{kubernetes_io_hostname='"+CALCULATING_HOSTNAME+"'}"
 POD_STATUS_PHASE_QUERY = "kube_pod_status_phase{namespace='capture',job='Kubernetes'}"
 
 # FOLDER
 SERVER_FOLDER = "server"
+DATA_UMMETER_FOLDER = "data_ummeter"
 
 # FILE NAME
 POD_START_TIME_FILENAME = "pod_start_time_{}_{}.csv"
 DATA_PROMETHEUS_AT_SERVER_FILENAME = "data-prometheus_{}_{}_server.csv"
 TIMESTAMP_FILENAME = "timestamps_{}_{}_server.csv"
+DATA_UMMETER_FILENAME = "data_ummeter_{}_{}.csv"
 
 # DIRECTORIES
-DATA_DIRECTORY = "/home/core/DoanDuong/knative-caculation/data/"
+DATA_DIRECTORY = "/home/controller/knative-caculation/data/"
 POD_START_TIME_DATA_FILE_DIRECTOR = DATA_DIRECTORY + POD_START_TIME_FILENAME
 DATA_PROMETHEUS_AT_SERVER_FILE_DIRECTORY = DATA_DIRECTORY + SERVER_FOLDER + SLASH + DATA_PROMETHEUS_AT_SERVER_FILENAME
+DATA_UMMETER_FILE_DIRECTORY = DATA_DIRECTORY + DATA_UMMETER_FOLDER + SLASH + DATA_UMMETER_FILENAME
 TIMESTAMP_DATA_FILE_DIRECTORY = DATA_DIRECTORY + SERVER_FOLDER + SLASH + TIMESTAMP_FILENAME
 
 
 # COMMAND
-START_UMMETER_CMD = '/usr/bin/python3 /home/core/DoanDuong/knative-caculation/usbmeter --addr 00:16:A5:00:0F:65 --out /home/luongtrann/hanoi/code/data_ummeter/data_ummeter_{}_{} --time {}'
-UPDATE_REPLICAS_CMD = '/usr/bin/python3 /home/core/DoanDuong/knative-caculation/main.py changevalue {} {} {}'
+START_UMMETER_CMD = '/usr/bin/python3 /home/controller/knative-caculation/usbmeter.py --addr 00:16:A5:00:0F:65 --out /home/controller/knative-caculation/data/data_ummeter/data_ummeter_{}_{} --time {}'
+UPDATE_REPLICAS_CMD = '/usr/bin/python3 /home/controller/knative-caculation/main_rebuild.py changevalue {} {} {}'
+RUN_UMMETER_AT_PI4_CMD = "/usr/bin/python3 /home/pi4knative/knative-caculation/usbmeter.py {} {} {}"
 
 # STATUS
 COLD_START_STATUS = "cold_start"
