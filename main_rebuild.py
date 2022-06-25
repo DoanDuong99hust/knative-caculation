@@ -10,7 +10,6 @@ import time
 import csv
 import paramiko
 import pods
-import getfiles
 import sys
 import threading
 from multiprocessing import Event, Process
@@ -19,7 +18,7 @@ from pods import *
 import subprocess
 import os
 import signal
-import usbmeter
+import run_on_pi4.usbmeter as usbmeter
 
 POD_EXISTED = 0
 WARM_CALCULATION_TIME = 0
@@ -79,7 +78,7 @@ def get_prometheus_values_and_update_job(target_pods:int, job:str, repetition: i
     values_running_pods = get_data_from_api(VALUES_PODS_QUERY)
     #write values to file
     try:
-        writer = csv.writer(open(DATA_PROMETHEUS_AT_SERVER_FILE_DIRECTORY.format(str(target_pods), str(repetition)), 'a'))
+        writer = csv.writer(open(DATA_PROMETHEUS_AT_PI4_FILE_DIRECTORY.format(str(target_pods), str(repetition)), 'a'))
         writer.writerow([datetime.utcfromtimestamp(values_running_pods[0]).strftime('%Y-%m-%d %H:%M:%S'), values_running_pods[1], values_per_cpu_in_use[1], values_memory[1], job])
     except:
         print("Error") 

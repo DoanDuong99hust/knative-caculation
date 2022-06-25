@@ -12,6 +12,6 @@ if __name__ == "__main__":
     for target in target_pods:
         for rep in range(0, reps, 1):
             print("Target: {}, rep:{}/{}".format(target,rep,reps))
-            cmd = '/usr/bin/python3 /home/core/DoanDuong/knative-caculation/main_rebuild.py master {} {} {} >> log.txt'.format(str(target), str(seconds), str(rep))
+            cmd = '/usr/bin/python3 /home/controller/knative-caculation/main_rebuild.py master {} {} {} >> log.txt'.format(str(target), str(seconds), str(rep))
             process = subprocess.run(cmd, shell=True, stdout=subprocess.PIPE)
             time.sleep(15)

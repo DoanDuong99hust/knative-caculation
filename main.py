@@ -7,7 +7,7 @@ import time
 import csv
 import paramiko
 import pods
-import getfiles
+import process_data_to_result.getfiles as getfiles
 import sys
 import threading
 from multiprocessing import Process
@@ -16,7 +16,7 @@ from pods import *
 import subprocess
 import os
 import signal
-import usbmeter
+import run_on_pi4.usbmeter as usbmeter
 
 url_pods = PROMETHEUS_DOMAIN + RUNNING_PODS_QUERY
 values_pods_t=json.loads(urllib.request.urlopen(url_pods).read())["data"]["result"][0]['value'][1]

@@ -1,6 +1,6 @@
 import subprocess
 import os
-import getfiles
+import process_data_to_result.getfiles as getfiles
 import time
 def start_ummeter(minutes: int):
     '''

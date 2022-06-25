@@ -1,0 +1,16 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: detection
+spec:
+  template:
+    metadata:
+      annotations:
+        autoscaling.knative.dev/min-scale: '2'
+    spec:
+      containers:
+      - image: 29061999/knative-video-detection@sha256:b1010e16a6f08bd3e18b078b2b3fc31f08477ed5b1983575a5242c0ae95fd543
+        ports:
+        - containerPort: 80
+      nodeSelector:
+        kubernetes.io/hostname: pi4
