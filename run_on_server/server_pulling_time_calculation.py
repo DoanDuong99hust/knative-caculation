@@ -1,8 +1,19 @@
-import subprocess
-from main_rebuild import *
+import time
+import urllib.request
 import docker
 import json
+import csv
+from datetime import datetime
 from server_constants import *
+
+def get_data_from_api(query:str):
+    url_data = PROMETHEUS_DOMAIN + query
+    try:
+        contents = urllib.request.urlopen(url_data).read().decode('utf-8')
+        values=json.loads(contents)["data"]["result"][0]['value']
+    except:
+        values = -1
+    return values
 
 client = docker.APIClient(base_url='unix://var/run/docker.sock')
 for line in client.pull(IMAGE_NAME, stream=True, decode=True):

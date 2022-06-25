@@ -1,4 +1,4 @@
-IMAGE_NAME = "29061999/knative-video-detection:v8080"
+IMAGE_NAME = "29061999/knative-video-detection:v1.2"
 STATUS_PULL_COMPLETE = "Pull complete"
 SLEEP_TIME = 0.1
 
@@ -30,14 +30,14 @@ VALUES_MEMORY_QUERY = "((node_memory_MemTotal_bytes{job='node_exporter',instance
 VALUES_NETWORK_RECEIVE_QUERY = "rate(node_network_receive_bytes_total{device='"+NETWORK_INTERFACE+"',instance='"+PI4_INSTANCE+":9100'}[1m])/(1024*1024)"
 
 # FOLDER
-DATA_FOLDER = "data"
 PULLING_FOLDER = "pulling"
 
 # FILE NAME
 DATA_PULLING_IMAGE_FILENAME = "data_pulling_image_{}_{}_pi4.csv"
 
 # DIRECTORIES
-DATA_PULLING_IMAGE_FILE_DIRECTORY = DATA_FOLDER + SLASH + PULLING_FOLDER + DATA_PULLING_IMAGE_FILENAME
+DATA_DIRECTORY = "run_on_pi4/data"
+DATA_PULLING_IMAGE_FILE_DIRECTORY = DATA_DIRECTORY + SLASH + PULLING_FOLDER + DATA_PULLING_IMAGE_FILENAME
 
 
 
