@@ -36,7 +36,7 @@ VALUES_NETWORK_RECEIVE_QUERY = "rate(node_network_receive_bytes_total{device='"+
 PULLING_FOLDER = "pulling"
 
 # FILE NAME
-DATA_PULLING_IMAGE_FILENAME = "data_pulling_image_{}_{}_server.csv"
+DATA_PULLING_IMAGE_FILENAME = "data_pulling_image_{}_{}_{}_server.csv"
 
 # DIRECTORIES
 DATA_DIRECTORY = "run_on_server/data/"

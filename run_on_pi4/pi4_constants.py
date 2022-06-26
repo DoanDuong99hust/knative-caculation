@@ -33,7 +33,7 @@ VALUES_NETWORK_RECEIVE_QUERY = "rate(node_network_receive_bytes_total{device='"+
 PULLING_FOLDER = "pulling"
 
 # FILE NAME
-DATA_PULLING_IMAGE_FILENAME = "data_pulling_image_{}_{}_pi4.csv"
+DATA_PULLING_IMAGE_FILENAME = "data_pulling_image_{}_{}_{}_pi4.csv"
 
 # DIRECTORIES
 DATA_DIRECTORY = "/home/ubuntu/knative-caculation/run_on_pi4/data"
