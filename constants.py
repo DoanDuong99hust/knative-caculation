@@ -9,8 +9,8 @@ PI_IP = "192.168.101.105"
 PI_USERNAME = "pi4knative"
 PI_PASSWORD = "1"
 
-CALCULATING_HOSTNAME = "pi4"
-CALCULATING_INSTANCE = "192.168.101.105"
+CALCULATING_HOSTNAME = "server"
+CALCULATING_INSTANCE = "192.168.101.101"
 
 # PORT
 PROMETHEUS_PORT = "8080"
@@ -57,6 +57,7 @@ DATA_UMMETER_FILE_DIRECTORY = DATA_DIRECTORY + DATA_UMMETER_FOLDER + SLASH + DAT
 TIMESTAMP_DATA_FILE_DIRECTORY = DATA_DIRECTORY + SERVER_FOLDER + SLASH + TIMESTAMP_FILENAME
 PULLING_TIME_DATA_FILE_DIRECTORY = DATA_DIRECTORY + PULLING_TIME_FOLDER + SLASH + DATA_PULLING_IMAGE_FILENAME
 
+DATA_PROMETHEUS_FILE_DIRECTORY = "/home/controller/knative-caculation/data/{}/data_prom_target_pod_{}_repeat_time_{}_video_{}_{}_{}.csv"
 
 # COMMAND
 START_UMMETER_CMD = '/usr/bin/python3 /home/controller/knative-caculation/usbmeter.py --addr 00:16:A5:00:0F:65 --out /home/controller/knative-caculation/data/data_ummeter/data_ummeter_{}_{} --time {}'

@@ -2,6 +2,7 @@ from datetime import datetime
 from nis import match
 from pickle import TRUE
 from tkinter import W
+from xxlimited import Str
 from constants import *
 import re
 import urllib.request
@@ -20,9 +21,14 @@ import os
 import signal
 import run_on_pi4.usbmeter as usbmeter
 
+localdate = datetime.now()
+generate_file_time = "{}_{}_{}_{}h{}".format(localdate.day, localdate.month, localdate.year, localdate.hour, localdate.minute)
+
 POD_EXISTED = 0
 WARM_CALCULATION_TIME = 0
 DELETE_CALCULATION_TIME = 0
+INSTANCE = ""
+TARGET_VIDEO = ""
 
 finished = False
 timestamps={}
@@ -78,8 +84,9 @@ def get_prometheus_values_and_update_job(target_pods:int, job:str, repetition: i
     values_running_pods = get_data_from_api(VALUES_PODS_QUERY)
     #write values to file
     try:
-        writer = csv.writer(open(DATA_PROMETHEUS_AT_PI4_FILE_DIRECTORY.format(str(target_pods), str(repetition)), 'a'))
-        writer.writerow([datetime.utcfromtimestamp(values_running_pods[0]).strftime('%Y-%m-%d %H:%M:%S'), values_running_pods[1], values_per_cpu_in_use[1], values_memory[1], job])
+        writer = csv.writer(open(DATA_PROMETHEUS_FILE_DIRECTORY.format(
+            str(INSTANCE),str(target_pods),str(repetition),str(TARGET_VIDEO),str(INSTANCE),generate_file_time), 'a'))
+        writer.writerow([values_running_pods[0],datetime.utcfromtimestamp(values_running_pods[0]).strftime('%Y-%m-%d %H:%M:%S'), values_running_pods[1], values_per_cpu_in_use[1], values_memory[1], job])
     except:
         print("Error") 
     # if TEST_MODE: print("Current pods: %s, target: %d" % (curr_pods, (int(target_pods)+POD_EXSISTED)))
@@ -102,7 +109,7 @@ def update_job_status(job:str, values_running_pods, pods_existed):
             jobs_status[ACTIVE_PROCESSING] = False
 
 def create_request():
-    subprocess.call(['sh', './curl.sh'])
+    subprocess.call(['sh','./deployments/curl.sh'])
 
 def timestamps_to_file(target_pods:int, repetition:int):
     with open(TIMESTAMP_DATA_FILE_DIRECTORY.format(str(target_pods), str(repetition)), 'w') as f:
@@ -114,7 +121,7 @@ def calculate_cold_job(target_pods:int, repetition: int):
     POD_EXISTED = get_pods_existed()
     while jobs_status[COLD_PROCESSING]:
         get_prometheus_values_and_update_job(target_pods, COLD_JOB, repetition, POD_EXISTED)
-        time.sleep(1)
+        time.sleep(0.5)
     print("Scenario: COLD - Ended...")
 
 def calculate_cold_to_warm_job(target_pods:int, repetition: int):
@@ -122,7 +129,7 @@ def calculate_cold_to_warm_job(target_pods:int, repetition: int):
     POD_EXISTED = get_pods_existed()
     while jobs_status[COLD_TO_WARM_PROCESSING]:
         get_prometheus_values_and_update_job(target_pods, COLD_TO_WARM, repetition, POD_EXISTED)
-        time.sleep(1)
+        time.sleep(0.5)
     print("Scenario: COLD to WARM - Ended...")
 
 def calculate_warm_job(target_pods:int, repetition: int):
@@ -131,7 +138,7 @@ def calculate_warm_job(target_pods:int, repetition: int):
     warm_caculation_time_count = 0
     while jobs_status[WARM_PROCESSING]:
         get_prometheus_values_and_update_job(target_pods, WARM_JOB, repetition, POD_EXISTED)
-        time.sleep(1)
+        time.sleep(0.5)
         warm_caculation_time_count = warm_caculation_time_count + 1
         if warm_caculation_time_count == int(WARM_CALCULATION_TIME):
             create_request()
@@ -143,7 +150,7 @@ def calculate_active_job(target_pods:int, repetition: int):
     POD_EXISTED = get_pods_existed()
     while jobs_status[ACTIVE_PROCESSING]:
         get_prometheus_values_and_update_job(target_pods, ACTIVE_JOB, repetition, POD_EXISTED)
-        time.sleep(1)
+        time.sleep(0.5)
 
 def calculate_delete_job(target_pods:int, repetition: int):
     print("Scenario: DELETE - Started...")
@@ -151,14 +158,14 @@ def calculate_delete_job(target_pods:int, repetition: int):
     delete_caculation_time_count = 0
     while jobs_status[DELETE_PROCESSING]:
         get_prometheus_values_and_update_job(target_pods, DELETE_JOB, repetition, POD_EXISTED)
-        time.sleep(1)
+        time.sleep(0.5)
         delete_caculation_time_count = delete_caculation_time_count +1
         if delete_caculation_time_count == int(DELETE_CALCULATION_TIME):
             jobs_status[DELETE_PROCESSING] = False
 
 def calculate_jobs(target_pods:int, repetition: int):
 
-    pods.update_replicas(target_pods)
+    pods.update_replicas(target_pods, INSTANCE)
     calculate_cold_job(target_pods, repetition)
     calculate_cold_to_warm_job(target_pods, repetition)
     calculate_warm_job(target_pods, repetition)
@@ -167,7 +174,7 @@ def calculate_jobs(target_pods:int, repetition: int):
     calculate_delete_job(target_pods, repetition)
     print("Measurement finished.")
     print("Saving timestamps..")
-    timestamps_to_file(target_pods, repetition)
+    # timestamps_to_file(target_pods, repetition)
     print("Done")
     global finished
     finished = True
@@ -178,18 +185,21 @@ if __name__ == "__main__":
     """ 
     call: python3 main.py [COMMAND] [TARGET_PODS] [MINUTES_WARM] 
     """
-    target_pods = sys.argv[2]
+    target_pods_scale = sys.argv[2]
     WARM_CALCULATION_TIME = sys.argv[3]
     DELETE_CALCULATION_TIME = sys.argv[3]
-    rep = sys.argv[4]
+    repeat_time = sys.argv[4]
+    INSTANCE = sys.argv[5]
+    TARGET_VIDEO = sys.argv[6]
+
     if sys.argv[1] == "master":
         # Call to source code at pi4 
-        start_pi4(RUN_UMMETER_AT_PI4_CMD)
+        # start_pi4(RUN_UMMETER_AT_PI4_CMD)
         #Update replicas
         # cmd = UPDATE_REPLICAS_CMD.format(str(target_pods), str(WARM_CALCULATION_TIME), str(rep))
         # start_master(cmd)
         # pods.update_replicas(target_pods)
-        p2=Process(target=calculate_jobs, args=(target_pods, rep, ), daemon = True)
+        p2=Process(target=calculate_jobs, args=(target_pods_scale, repeat_time, ), daemon = True)
         # p1=Process(target=usbmeter.main, args=(target_pods, rep, WARM_CALCULATION_TIME, ), daemon = True)
         # p1.start()
         p2.start()
@@ -197,6 +207,6 @@ if __name__ == "__main__":
         p2.join()
         print("Every process is done.")
     elif sys.argv[1] == "changevalue":
-        usbmeter.main(target_pods, rep, WARM_CALCULATION_TIME, )
+        usbmeter.main(target_pods_scale, repeat_time, WARM_CALCULATION_TIME, )
 
     else: print("Not recognized command")

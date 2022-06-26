@@ -2,8 +2,8 @@ import yaml
 import subprocess
 import main_rebuild
 
-path_capture_deploy = "deployments/object-detection.yaml"
-def update_replicas(x: int):
+path_capture_deploy = "/home/controller/knative-caculation/deployments/object-detection.yaml"
+def update_replicas(target_pods_scale: int, instance: str):
 #opens the capture file and updates the replica values
     try:
         with open(path_capture_deploy, "r") as yaml_file:    
@@ -11,7 +11,8 @@ def update_replicas(x: int):
             for doc in docs:
                 for key, value in doc.items():
                     if value == "serving.knative.dev/v1":
-                        doc["spec"]["template"]["metadata"]["annotations"]["autoscaling.knative.dev/min-scale"] = str(x)
+                        doc["spec"]["template"]["metadata"]["annotations"]["autoscaling.knative.dev/max-scale"] = str(target_pods_scale)
+                        doc["spec"]["template"]["spec"]["nodeSelector"]["kubernetes.io/hostname"] = str(instance)
                         break
         with open(path_capture_deploy, 'w') as yaml_file:
             yaml.dump_all(docs, yaml_file, default_flow_style=False)
