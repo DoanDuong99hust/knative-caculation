@@ -7,8 +7,8 @@
 #     metadata:
 #       # This is the name of our new "Revision," it must follow the convention {service-name}-{revision-name}
 #       # name: nginx-test
-#       # annotations:
-#       #   autoscaling.knative.dev/max -scale: "3"
+#       annotations:
+#         autoscaling.knative.dev/max -scale: "3"
 #         # autoscaling.knative.dev/scale-to-zero-pod-retention-period: "10s"
 #     spec:
 #       nodeSelector:

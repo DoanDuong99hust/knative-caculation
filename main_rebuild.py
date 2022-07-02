@@ -152,6 +152,19 @@ def calculate_active_job(target_pods:int, repetition: int):
         get_prometheus_values_and_update_job(target_pods, ACTIVE_JOB, repetition, POD_EXISTED)
         time.sleep(0.5)
 
+def calculate_active_scale_job(target_pods:int, repetition: int):
+    print("Scenario: ACTIVE SCALE - Started...")
+    POD_EXISTED = get_pods_existed()
+    warm_caculation_time_count = 0
+    while jobs_status[WARM_PROCESSING]:
+        get_prometheus_values_and_update_job(target_pods, WARM_JOB, repetition, POD_EXISTED)
+        time.sleep(0.5)
+        warm_caculation_time_count = warm_caculation_time_count + 1
+        if warm_caculation_time_count == int(300):
+            create_request()
+            get_prometheus_values_and_update_job(target_pods, WARM_JOB, repetition, POD_EXISTED)
+    print("Scenario: ACTIVE SCALE - Ended...")
+
 def calculate_delete_job(target_pods:int, repetition: int):
     print("Scenario: DELETE - Started...")
     POD_EXISTED = get_pods_existed()
@@ -162,6 +175,21 @@ def calculate_delete_job(target_pods:int, repetition: int):
         delete_caculation_time_count = delete_caculation_time_count +1
         if delete_caculation_time_count == int(DELETE_CALCULATION_TIME):
             jobs_status[DELETE_PROCESSING] = False
+
+def calculate_scale_jobs(target_pods:int, repetition: int):
+    pods.update_replicas(target_pods, INSTANCE)
+    calculate_cold_job(target_pods, repetition)
+    calculate_warm_job(target_pods, repetition)
+    calculate_active_scale_job(target_pods, repetition)
+    pods.delete_pods() # delete service
+    calculate_delete_job(target_pods, repetition)
+    print("Measurement finished.")
+    print("Saving timestamps..")
+    # timestamps_to_file(target_pods, repetition)
+    print("Done")
+    global finished
+    finished = True
+    return
 
 def calculate_jobs(target_pods:int, repetition: int):
 
@@ -194,7 +222,7 @@ if __name__ == "__main__":
 
     if sys.argv[1] == "master":
         # Call to source code at pi4 
-        # start_pi4(RUN_UMMETER_AT_PI4_CMD)
+        start_pi4(RUN_UMMETER_AT_PI4_CMD.format(target_pods_scale, WARM_CALCULATION_TIME, TARGET_VIDEO, generate_file_time))
         #Update replicas
         # cmd = UPDATE_REPLICAS_CMD.format(str(target_pods), str(WARM_CALCULATION_TIME), str(rep))
         # start_master(cmd)

@@ -5,8 +5,8 @@ from lib2to3.pgen2.token import COLON, SLASH
 MASTER_HOST = "localhost"
 MASTER_USERNAME = "controller"
 MASTER_PASSWORD = "1"
-PI_IP = "192.168.101.105"
-PI_USERNAME = "pi4knative"
+PI_IP = "192.168.101.48"
+PI_USERNAME = "pi"
 PI_PASSWORD = "1"
 
 CALCULATING_HOSTNAME = "server"

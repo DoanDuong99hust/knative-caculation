@@ -1,5 +1,0 @@
-/usr/bin/python3 /home/pi4knative/knative-caculation/usbmeter.py {} {} {}
-kubectl apply -f /home/controller/knative-caculation/object-detection.yaml
-service.serving.knative.dev/detection configured
-Service deployed
-Scenario: COLD - Started...

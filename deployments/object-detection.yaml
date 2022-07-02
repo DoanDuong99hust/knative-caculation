@@ -6,11 +6,11 @@ spec:
   template:
     metadata:
       annotations:
-        autoscaling.knative.dev/min-scale: '2'
+        autoscaling.knative.dev/max-scale: '3'
     spec:
       containers:
-      - image: 29061999/knative-video-detection@sha256:b1010e16a6f08bd3e18b078b2b3fc31f08477ed5b1983575a5242c0ae95fd543
+      - image: 29061999/knative-video-detection@sha256:477b697dae923281790d4064a2261b8a704b38baeae904a23a3b24ee0022e87d
         ports:
-        - containerPort: 80
+        - containerPort: 8080
       nodeSelector:
         kubernetes.io/hostname: pi4
