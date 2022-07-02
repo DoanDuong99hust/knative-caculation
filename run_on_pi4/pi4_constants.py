@@ -31,13 +31,16 @@ VALUES_NETWORK_RECEIVE_QUERY = "rate(node_network_receive_bytes_total{device='"+
 
 # FOLDER
 PULLING_FOLDER = "pulling"
+POWER_FOLDER = "power"
 
 # FILE NAME
 DATA_PULLING_IMAGE_FILENAME = "data_pulling_image_{}_{}_{}_pi4.csv"
+DATA_POWER_FILENAME = "data_power_target_pod_{}_repeat_time_{}_video_{}_pi4_{}.csv"
 
 # DIRECTORIES
 DATA_DIRECTORY = "/home/ubuntu/knative-caculation/run_on_pi4/data"
 DATA_PULLING_IMAGE_FILE_DIRECTORY = DATA_DIRECTORY + SLASH + PULLING_FOLDER + SLASH + DATA_PULLING_IMAGE_FILENAME
+DATA_POWER_FILE_DIRECTORY = "/home/pi/knative-caculation/run_on_pi4/data/" + POWER_FOLDER + SLASH + DATA_POWER_FILENAME
 
 
 

@@ -1,8 +1,3 @@
-#!/usr/bin/python3
-
-# sudo systemctl start bluetooth
-# echo "power on" | bluetoothctl
-
 import collections
 import struct
 import sys
@@ -15,7 +10,8 @@ import matplotlib.animation as animation
 from matplotlib.dates import DayLocator, HourLocator, DateFormatter, drange
 from bluetooth import *
 import csv
-from constants import *
+
+from run_on_pi4.pi4_constants import *
 
 
 # Process socket data from USB meter and extract volts, amps etc.
@@ -47,7 +43,7 @@ def processdata(d):
     return data
 
 
-def main(target_pods: int, repetition: int, time_analysis: int):
+def main(target_pods: int, warming_time: int, video: str, generate_file_time:str):
     
     try:
         addr = '00:16:A5:00:0F:65'
@@ -87,7 +83,7 @@ def main(target_pods: int, repetition: int, time_analysis: int):
         print('connecting to "{}" on {}:{}'.format(name, host, port))
         res = sock.connect((host, port))
 
-    with open(DATA_UMMETER_FILE_DIRECTORY.format(str(target_pods), str(repetition)), 'a+') as f:
+    with open(DATA_POWER_FILE_DIRECTORY.format(str(target_pods), str(warming_time), str(video), str(generate_file_time)), 'a+') as f:
         writer = csv.writer(f)
         writer.writerow(["time", "Volts", "Amps", "Watts"])
         leng = 20
@@ -98,7 +94,7 @@ def main(target_pods: int, repetition: int, time_analysis: int):
         
         d = b""
 
-        endtime = time.time()+(60*int(time_analysis)+240) #[m]->[s] + 45s for cold and delete
+        endtime = time.time()+(int(warming_time)+300) #[m]->[s] + 45s for cold and delete
         while endtime-time.time() > 0:
             # Send request to USB meter
             sock.send((0xF0).to_bytes(1, byteorder="big"))
@@ -127,4 +123,4 @@ def main(target_pods: int, repetition: int, time_analysis: int):
     return True
 
 if __name__ == "__main__":
-    main(sys.argv[1],sys.argv[2],sys.argv[3])
+    main(sys.argv[1],sys.argv[2],sys.argv[3],sys.argv[4])
