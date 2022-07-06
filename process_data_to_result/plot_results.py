@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 
-target_file = "/home/controller/knative-caculation/data/server/data_prom_target_pod_1_repeat_time_1_video_4K_video_59s.webm_server_26_6_2022_2h13.csv"
+target_file = "/home/controller/knative-caculation/data/server/data_prom_target_pod_1_repeat_time_1_video_highway.mp4_server_5_7_2022_3h15.csv"
 
 def create_2D_array_data(path):
   numpy_data = (pd.read_csv(path)).to_numpy()
@@ -13,7 +13,7 @@ def create_2D_array_data(path):
 #   print(transpose_data)
 
   time_period = list(transpose_data[0])
-  cpu_value = list(transpose_data[4])
+  cpu_value = list(transpose_data[3])
   test_array = np.array([time_period, cpu_value])
 #   print(test_array)
   list_arr = test_array.tolist()

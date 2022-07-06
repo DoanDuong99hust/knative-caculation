@@ -3,6 +3,8 @@ from nis import match
 from pickle import TRUE
 from tkinter import W
 from xxlimited import Str
+
+import requests
 from constants import *
 import re
 import urllib.request
@@ -29,6 +31,7 @@ WARM_CALCULATION_TIME = 0
 DELETE_CALCULATION_TIME = 0
 INSTANCE = ""
 TARGET_VIDEO = ""
+DETECTION_IMAGE = ""
 
 finished = False
 timestamps={}
@@ -78,10 +81,17 @@ def get_data_from_api(query:str):
         values = -1
     return values
 
+def is_pod_terminating():
+    status = str(subprocess.run(['deployments/get_pod_status.sh', '-l'], stdout=subprocess.PIPE).stdout.decode('utf-8')).strip()
+    return status == TERMINATING_STATUS
+
 def get_prometheus_values_and_update_job(target_pods:int, job:str, repetition: int, pods_existed:int):
     values_per_cpu_in_use = get_data_from_api(VALUES_CPU_QUERY)
     values_memory = get_data_from_api(VALUES_MEMORY_QUERY)
     values_running_pods = get_data_from_api(VALUES_PODS_QUERY)
+
+    if is_pod_terminating():
+        job = job + ":terminating"
     #write values to file
     try:
         writer = csv.writer(open(DATA_PROMETHEUS_FILE_DIRECTORY.format(
@@ -108,8 +118,16 @@ def update_job_status(job:str, values_running_pods, pods_existed):
         if curr_running_pods < pods_existed:
             jobs_status[ACTIVE_PROCESSING] = False
 
-def create_request():
-    subprocess.call(['sh','./deployments/curl.sh'])
+def create_request(url: str):
+    print(url)
+    rs_response = requests.get(url)
+    print(rs_response)
+    # subprocess.call(['sh','./deployments/curl.sh'])
+
+def create_request_thread():
+    video_path = "test_video/" + TARGET_VIDEO
+    print("Start thread")
+    threading.Thread(target=create_request, args=("http://detection.default.svc.cluster.local/{}".format(video_path),)).start()
 
 def timestamps_to_file(target_pods:int, repetition:int):
     with open(TIMESTAMP_DATA_FILE_DIRECTORY.format(str(target_pods), str(repetition)), 'w') as f:
@@ -129,7 +147,7 @@ def calculate_cold_to_warm_job(target_pods:int, repetition: int):
     POD_EXISTED = get_pods_existed()
     while jobs_status[COLD_TO_WARM_PROCESSING]:
         get_prometheus_values_and_update_job(target_pods, COLD_TO_WARM, repetition, POD_EXISTED)
-        time.sleep(0.5)
+        time.sleep(0.2)
     print("Scenario: COLD to WARM - Ended...")
 
 def calculate_warm_job(target_pods:int, repetition: int):
@@ -141,7 +159,7 @@ def calculate_warm_job(target_pods:int, repetition: int):
         time.sleep(0.5)
         warm_caculation_time_count = warm_caculation_time_count + 1
         if warm_caculation_time_count == int(WARM_CALCULATION_TIME):
-            create_request()
+            create_request_thread()
             get_prometheus_values_and_update_job(target_pods, WARM_JOB, repetition, POD_EXISTED)
     print("Scenario: WARM - Ended...")
 
@@ -150,7 +168,7 @@ def calculate_active_job(target_pods:int, repetition: int):
     POD_EXISTED = get_pods_existed()
     while jobs_status[ACTIVE_PROCESSING]:
         get_prometheus_values_and_update_job(target_pods, ACTIVE_JOB, repetition, POD_EXISTED)
-        time.sleep(0.5)
+        time.sleep(0.2)
 
 def calculate_active_scale_job(target_pods:int, repetition: int):
     print("Scenario: ACTIVE SCALE - Started...")
@@ -161,7 +179,7 @@ def calculate_active_scale_job(target_pods:int, repetition: int):
         time.sleep(0.5)
         warm_caculation_time_count = warm_caculation_time_count + 1
         if warm_caculation_time_count == int(300):
-            create_request()
+            create_request_thread()
             get_prometheus_values_and_update_job(target_pods, WARM_JOB, repetition, POD_EXISTED)
     print("Scenario: ACTIVE SCALE - Ended...")
 
@@ -177,7 +195,7 @@ def calculate_delete_job(target_pods:int, repetition: int):
             jobs_status[DELETE_PROCESSING] = False
 
 def calculate_scale_jobs(target_pods:int, repetition: int):
-    pods.update_replicas(target_pods, INSTANCE)
+    pods.update_replicas(target_pods, INSTANCE, DETECTION_IMAGE)
     calculate_cold_job(target_pods, repetition)
     calculate_warm_job(target_pods, repetition)
     calculate_active_scale_job(target_pods, repetition)
@@ -193,7 +211,7 @@ def calculate_scale_jobs(target_pods:int, repetition: int):
 
 def calculate_jobs(target_pods:int, repetition: int):
 
-    pods.update_replicas(target_pods, INSTANCE)
+    pods.update_replicas(target_pods, INSTANCE, DETECTION_IMAGE)
     calculate_cold_job(target_pods, repetition)
     calculate_cold_to_warm_job(target_pods, repetition)
     calculate_warm_job(target_pods, repetition)
@@ -219,22 +237,23 @@ if __name__ == "__main__":
     repeat_time = sys.argv[4]
     INSTANCE = sys.argv[5]
     TARGET_VIDEO = sys.argv[6]
-
+    DETECTION_IMAGE = sys.argv[7]
     if sys.argv[1] == "master":
         # Call to source code at pi4 
-        start_pi4(RUN_UMMETER_AT_PI4_CMD.format(target_pods_scale, WARM_CALCULATION_TIME, TARGET_VIDEO, generate_file_time))
-        #Update replicas
-        # cmd = UPDATE_REPLICAS_CMD.format(str(target_pods), str(WARM_CALCULATION_TIME), str(rep))
-        # start_master(cmd)
-        # pods.update_replicas(target_pods)
-        p2=Process(target=calculate_jobs, args=(target_pods_scale, repeat_time, ), daemon = True)
-        # p1=Process(target=usbmeter.main, args=(target_pods, rep, WARM_CALCULATION_TIME, ), daemon = True)
+        if INSTANCE == "pi4":
+            print("Start calculate power on pi4")
+            p0=Process(target=start_pi4, args=(RUN_UMMETER_AT_PI4_CMD.format(target_pods_scale, repeat_time, TARGET_VIDEO, generate_file_time), ))
+        print("Start calculate job on {}".format(INSTANCE))
+        p1=Process(target=calculate_jobs, args=(target_pods_scale, repeat_time, ), daemon = True)
+        p0.start()
+        time.sleep(6)
+        p1.start()
+        p1.join()
+        p0.join()
+
+        # p1=Process(target=calculate_scale_jobs, args=(target_pods_scale, repeat_time, ), daemon = True)
         # p1.start()
-        p2.start()
         # p1.join()
-        p2.join()
         print("Every process is done.")
-    elif sys.argv[1] == "changevalue":
-        usbmeter.main(target_pods_scale, repeat_time, WARM_CALCULATION_TIME, )
 
     else: print("Not recognized command")

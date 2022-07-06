@@ -8,9 +8,11 @@ MASTER_PASSWORD = "1"
 PI_IP = "192.168.101.48"
 PI_USERNAME = "pi"
 PI_PASSWORD = "1"
+SERVER_IP = "192.168.101.101"
+SERVER_USER = "server"
 
-CALCULATING_HOSTNAME = "server"
-CALCULATING_INSTANCE = "192.168.101.101"
+CALCULATING_HOSTNAME = "pi4"
+CALCULATING_INSTANCE = "192.168.101.17"
 
 # PORT
 PROMETHEUS_PORT = "8080"
@@ -27,6 +29,8 @@ PROMETHEUS_DOMAIN = "http://"+ MASTER_HOST + COLON + PROMETHEUS_PORT +"/api/v1/q
 SERVICE_DOMAIN = "http://detection.default.svc.cluster.local"
 
 # QUERY
+VALUE_POD_STATUS_QUERY = "kube_pod_status_phase{job='kube-state-metrics',namespace='default'}"
+VALUE_POD_TERMINATE_QUERY = "kube_pod_container_status_terminated{job='kube-state-metrics',namespace='default',container='user-container'}"
 VALUES_CPU_QUERY = "100-(avg%20by%20(instance,job)(irate(node_cpu_seconds_total{mode='idle',job='node_exporter',instance='"+CALCULATING_INSTANCE+":9100'}[30s])*100))"
 VALUES_PODS_QUERY = "kubelet_running_pods{kubernetes_io_hostname='"+CALCULATING_HOSTNAME+"'}"
 VALUES_MEMORY_QUERY = "((node_memory_MemTotal_bytes{job='node_exporter',instance='"+CALCULATING_INSTANCE+":9100'}-node_memory_MemAvailable_bytes{job='node_exporter',instance='"+CALCULATING_INSTANCE+":9100'})/(node_memory_MemTotal_bytes{job='node_exporter',instance='"+CALCULATING_INSTANCE+":9100'}))*100"
@@ -62,7 +66,7 @@ DATA_PROMETHEUS_FILE_DIRECTORY = "/home/controller/knative-caculation/data/{}/da
 # COMMAND
 START_UMMETER_CMD = '/usr/bin/python3 /home/controller/knative-caculation/usbmeter.py --addr 00:16:A5:00:0F:65 --out /home/controller/knative-caculation/data/data_ummeter/data_ummeter_{}_{} --time {}'
 UPDATE_REPLICAS_CMD = '/usr/bin/python3 /home/controller/knative-caculation/main_rebuild.py changevalue {} {} {}'
-RUN_UMMETER_AT_PI4_CMD = "/usr/bin/python3 /home/pi4knative/knative-caculation/usbmeter.py {} {} {}"
+RUN_UMMETER_AT_PI4_CMD = "/usr/bin/python3 /home/pi/knative-caculation/run_on_pi4/usbmeter.py {} {} {} {}"
 
 # STATUS
 COLD_START_STATUS = "cold_start"
@@ -76,6 +80,7 @@ DELETE_DONE_STATUS = "delete_done"
 POD_DELETE_AFTER_STATUS = "pods_deleted_after"
 PENDING_STATUS = "Pending"
 RUNNING_STATUS = "Running"
+TERMINATING_STATUS = "Terminating"
 
 COLD_PROCESSING = "cold_processing"
 COLD_TO_WARM_PROCESSING = "cold_to_warm_processing"
