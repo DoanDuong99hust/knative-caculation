@@ -4,7 +4,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 
-target_file = "/home/controller/knative-caculation/data/server/data_prom_target_pod_1_repeat_time_1_video_highway.mp4_server_5_7_2022_3h15.csv"
+data_folder = "D:\FIL\DATN\Data"
+target_file = "D:\FIL\DATN\Data\server\data_prom_target_pod_1_repeat_time_1_video_4K_video_59s.webm_server_5_7_2022_3h36.csv"
 
 def create_2D_array_data(path):
   numpy_data = (pd.read_csv(path)).to_numpy()
