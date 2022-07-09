@@ -110,7 +110,7 @@ def main(target_pods: int, warming_time: int, video: str, generate_file_time:str
             watts.append(data["Watts"])
             times.append(data["time"])
         
-            #print("%s: %fV %fA %fW" % (data["time"], data["Volts"], data["Amps"], data["Watts"]))
+            print("%s: %fV %fA %fW" % (data["time"], data["Volts"], data["Amps"], data["Watts"]))
 
             
             writer.writerow([data["time"], data["Volts"], data["Amps"], data["Watts"]])
