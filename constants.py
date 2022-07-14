@@ -10,9 +10,11 @@ PI_USERNAME = "pi"
 PI_PASSWORD = "1"
 SERVER_IP = "192.168.101.101"
 SERVER_USER = "server"
+PI4_IP = "192.168.101.17"
+PI4_USER = "pi4"
 
-CALCULATING_HOSTNAME = "pi4"
-CALCULATING_INSTANCE = "192.168.101.17"
+# CALCULATING_HOSTNAME = "server"
+# CALCULATING_INSTANCE = "192.168.101.101"
 
 # PORT
 PROMETHEUS_PORT = "8080"
@@ -31,12 +33,12 @@ SERVICE_DOMAIN = "http://detection.default.svc.cluster.local"
 # QUERY
 VALUE_POD_STATUS_QUERY = "kube_pod_status_phase{job='kube-state-metrics',namespace='default'}"
 VALUE_POD_TERMINATE_QUERY = "kube_pod_container_status_terminated{job='kube-state-metrics',namespace='default',container='user-container'}"
-VALUES_CPU_QUERY = "100-(avg%20by%20(instance,job)(irate(node_cpu_seconds_total{mode='idle',job='node_exporter',instance='"+CALCULATING_INSTANCE+":9100'}[30s])*100))"
-VALUES_PODS_QUERY = "kubelet_running_pods{kubernetes_io_hostname='"+CALCULATING_HOSTNAME+"'}"
-VALUES_MEMORY_QUERY = "((node_memory_MemTotal_bytes{job='node_exporter',instance='"+CALCULATING_INSTANCE+":9100'}-node_memory_MemAvailable_bytes{job='node_exporter',instance='"+CALCULATING_INSTANCE+":9100'})/(node_memory_MemTotal_bytes{job='node_exporter',instance='"+CALCULATING_INSTANCE+":9100'}))*100"
-RUNNING_PODS_QUERY = "kubelet_running_pods{kubernetes_io_hostname='"+CALCULATING_HOSTNAME+"'}"
+VALUES_CPU_QUERY = "100-(avg%20by%20(instance,job)(irate(node_cpu_seconds_total{{mode='idle',job='node_exporter',instance='{}:9100'}}[30s])*100))"
+VALUES_PODS_QUERY = "kubelet_running_pods{{kubernetes_io_hostname='{}'}}"
+VALUES_MEMORY_QUERY = "((node_memory_MemTotal_bytes{{job='node_exporter',instance='{}:9100'}}-node_memory_MemAvailable_bytes{{job='node_exporter',instance='{}:9100'}})/(node_memory_MemTotal_bytes{{job='node_exporter',instance='{}:9100'}}))*100"
+RUNNING_PODS_QUERY = "kubelet_running_pods{{kubernetes_io_hostname='{}'}}"
 POD_STATUS_PHASE_QUERY = "kube_pod_status_phase{namespace='capture',job='Kubernetes'}"
-VALUES_NETWORK_RECEIVE_QUERY = "rate(node_network_receive_bytes_total{device='"+NETWORK_INTERFACE+"',instance='"+CALCULATING_INSTANCE+":9100'}[1m])/(1024*1024)"
+VALUES_NETWORK_RECEIVE_QUERY = "rate(node_network_receive_bytes_total{{device='"+NETWORK_INTERFACE+"',instance='{}:9100'}}[1m])/(1024*1024)"
 
 # FOLDER
 SERVER_FOLDER = "server"
@@ -62,6 +64,7 @@ TIMESTAMP_DATA_FILE_DIRECTORY = DATA_DIRECTORY + SERVER_FOLDER + SLASH + TIMESTA
 PULLING_TIME_DATA_FILE_DIRECTORY = DATA_DIRECTORY + PULLING_TIME_FOLDER + SLASH + DATA_PULLING_IMAGE_FILENAME
 
 DATA_PROMETHEUS_FILE_DIRECTORY = "/home/controller/knative-caculation/data/{}/data_prom_target_pod_{}_repeat_time_{}_video_{}_{}_{}.csv"
+DATA_TIMESTAMP_FILE_DIRECTORY = "/home/controller/knative-caculation/data/timestamp/{}/data_timestamp_target_pod_{}_repeat_time_{}_video_{}_{}_{}.csv"
 
 # COMMAND
 START_UMMETER_CMD = '/usr/bin/python3 /home/controller/knative-caculation/usbmeter.py --addr 00:16:A5:00:0F:65 --out /home/controller/knative-caculation/data/data_ummeter/data_ummeter_{}_{} --time {}'
@@ -83,12 +86,14 @@ RUNNING_STATUS = "Running"
 TERMINATING_STATUS = "Terminating"
 
 COLD_PROCESSING = "cold_processing"
+COLD_AFTER_DEPLOY_PROCESSING = "cold_after_deploy"
 COLD_TO_WARM_PROCESSING = "cold_to_warm_processing"
 WARM_PROCESSING = "warm_processing"
 ACTIVE_PROCESSING = "active_processing"
 DELETE_PROCESSING = "delete_processing"
 
 COLD_JOB = "cold"
+COLD_AFTER_DEPLOY_JOB = "cold_after_deploy"
 COLD_TO_WARM = "cold_to_warm"
 WARM_JOB = "warm"
 ACTIVE_JOB = "active"

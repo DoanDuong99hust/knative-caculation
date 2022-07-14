@@ -29,8 +29,9 @@ spec:
     metadata:
       annotations:
         autoscaling.knative.dev/max-scale: "3"
-        # autoscaling.knative.dev/target: "1"                     
-        autoscaling.knative.dev/window: "6s" # stable-window 6s -> 1h, default 60s                                                                                        
+        autoscaling.knative.dev/initial-scale: "3"
+        autoscaling.knative.dev/target: "1"                     
+        autoscaling.knative.dev/window: "30s" # stable-window 6s -> 1h, default 60s                                                                                        
         # autoscaling.knative.dev/scale-to-zero-grace-period: "1s" # default 30s 
     spec:
       nodeSelector:
