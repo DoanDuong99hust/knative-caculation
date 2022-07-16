@@ -15,6 +15,8 @@ def update_replicas(target_pods_scale: int, instance: str, detection_image: str)
                 for key, value in doc.items():
                     if value == "serving.knative.dev/v1":
                         doc["spec"]["template"]["metadata"]["annotations"]["autoscaling.knative.dev/max-scale"] = str(target_pods_scale)
+                        doc["spec"]["template"]["metadata"]["annotations"]["autoscaling.knative.dev/initial-scale"] = str(target_pods_scale)
+                        doc["spec"]["template"]["metadata"]["annotations"]["autoscaling.knative.dev/window"] = str(100+target_pods_scale)+"s"
                         doc["spec"]["template"]["spec"]["nodeSelector"]["kubernetes.io/hostname"] = str(instance)
                         doc["spec"]["template"]["spec"]["containers"][0]["image"] = str(detection_image)
                         break

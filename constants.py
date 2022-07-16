@@ -85,9 +85,11 @@ PENDING_STATUS = "Pending"
 RUNNING_STATUS = "Running"
 TERMINATING_STATUS = "Terminating"
 
+NULL_PROCESSING = "null_processing"
 COLD_PROCESSING = "cold_processing"
 COLD_AFTER_DEPLOY_PROCESSING = "cold_after_deploy"
 COLD_TO_WARM_PROCESSING = "cold_to_warm_processing"
+COLD_START_PROCESSING = "cold_start_processing"
 WARM_PROCESSING = "warm_processing"
 ACTIVE_PROCESSING = "active_processing"
 DELETE_PROCESSING = "delete_processing"
@@ -98,3 +100,13 @@ COLD_TO_WARM = "cold_to_warm"
 WARM_JOB = "warm"
 ACTIVE_JOB = "active"
 DELETE_JOB = "delete"
+
+########################## Rebuild ######################
+# State
+NULL_STATE = "begin"
+COLD_START_STATE = "cold_start"
+WARM_STATE = "warm"
+COLD_STATE = "cold"
+ACTIVE_STATE = "active"
+
+# Action
