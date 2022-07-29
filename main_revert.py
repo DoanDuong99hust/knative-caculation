@@ -31,6 +31,7 @@ generate_file_time = "{}_{}_{}_{}h{}".format(localdate.day, localdate.month, loc
 ACTIVE_CALCULATION_TIME = 0
 NULL_CALCULATION_TIME = 0
 COLD_CALCULATION_TIME = 0
+WARM_CALCULATION_TIME = 0
 INSTANCE = ""
 TARGET_VIDEO = ""
 DETECTION_IMAGE = ""
@@ -46,6 +47,7 @@ jobs_status = {
     NULL_PROCESSING : True,
     COLD_START_PROCESSING : True,
     WARM_PROCESSING : True,
+    WARM_TO_COLD_PROCESSING : True,
     COLD_PROCESSING : True,
     ACTIVE_PROCESSING : True,
     DELETE_PROCESSING : True}
@@ -116,15 +118,18 @@ def update_job_status(state:str, values_running_pods, target_pods:int):
     #+2 on target pods for the default pods
     curr_running_pods = int(values_running_pods[1])
     # print(state, values_running_pods, target_pods, POD_EXISTED)
-    if COLD_START_STATE == state or "cold_start:curl" == state:
+    if COLD_START_STATE == state or "cold_start:update_config" == state or "cold_start:curl" == state:
         if curr_running_pods == POD_EXISTED + target_pods:
             jobs_status[COLD_START_PROCESSING] = False
     elif WARM_STATE == state:
         if curr_running_pods == POD_EXISTED:
             jobs_status[WARM_PROCESSING] = False
-    elif DELETE_JOB == state:
+    elif WARM_TO_COLD_JOB == state:
         if curr_running_pods == POD_EXISTED:
-            jobs_status[DELETE_PROCESSING] = False
+            jobs_status[WARM_TO_COLD_PROCESSING] = False
+    elif ACTIVE_STATE == state:
+        if curr_running_pods == POD_EXISTED:
+            jobs_status[ACTIVE_PROCESSING] = False
 
 def create_request(url: str):
     rs_response = requests.get(url)
@@ -172,10 +177,21 @@ def calculate_cold_start_job(target_pods:int, repetition: int, state:str):
 
 def calculate_warm_job(target_pods:int, repetition: int):
     print("Scenario: WARM - Started...")
+    warm_time_count = 0
     while jobs_status[WARM_PROCESSING]:
         get_prometheus_values_and_update_job(target_pods, WARM_JOB, repetition)
         time.sleep(0.5)
+        warm_time_count = warm_time_count + 0.5
+        if warm_time_count == int(WARM_CALCULATION_TIME):
+            jobs_status[WARM_PROCESSING]=False
     print("Scenario: WARM - Ended...")
+
+def calculate_warm_to_cold_job(target_pods:int, repetition: int):
+    print("Scenario: WARM to COLD - Started...")
+    while jobs_status[WARM_TO_COLD_PROCESSING]:
+        get_prometheus_values_and_update_job(target_pods, WARM_TO_COLD_JOB, repetition)
+        time.sleep(0.5)
+    print("Scenario: WARM to COLD - Ended...")
 
 def calculate_cold_job(target_pods:int, repetition: int):
     print("Scenario: COLD - Started...")
@@ -190,24 +206,29 @@ def calculate_cold_job(target_pods:int, repetition: int):
 
 def calculate_active_job(target_pods:int, repetition: int):
     print("Scenario: ACTIVE - Started...")
-    active_calculation_time_count = 0
     while jobs_status[ACTIVE_PROCESSING]:
-        get_prometheus_values_and_update_job(target_pods, ACTIVE_JOB, repetition)
+        get_prometheus_values_and_update_job(target_pods, ACTIVE_STATE, repetition)
         time.sleep(0.5)
-        active_calculation_time_count = active_calculation_time_count + 0.5
-        if active_calculation_time_count == int(ACTIVE_CALCULATION_TIME):
-            multiservice_pods.delete_pods()
-            jobs_status[ACTIVE_PROCESSING] = False
     print("Scenario: ACTIVE - Ended...")
 
-def calculate_delete_job(target_pods:int, repetition: int):
-    print("Scenario: DELETE - Started...")
+def calculate_delete_job(target_pods:int, repetition: int, job:str):
+    print("Scenario: DELETE {} - Started...".format(job))
+    delete_time_count = 0
+    timestamps["cold_delete_action_start"]=time.time()
+    multiservice_pods.delete_pods()
+    timestamps["cold_delete_action_end"]=time.time()
     while jobs_status[DELETE_PROCESSING]:
-        get_prometheus_values_and_update_job(target_pods, DELETE_JOB, repetition)
+        get_prometheus_values_and_update_job(target_pods, job, repetition)
         time.sleep(0.5)
-    print("Scenario: DELETE - Ended...")
+        delete_time_count = delete_time_count + 0.5
+        if delete_time_count == 30:
+            jobs_status[DELETE_PROCESSING]=False
+    print("Scenario: DELETE {}- Ended...".format(job))
 
-def calculate_jobs(target_pods:int, repetition: int):
+def calculate_revert_job(target_pods:int, repetition: int):
+
+    # ROUND 1: WARM DELETE
+    print("-----------WARM DELETE START--------------")
 
     timestamps["empty_start"]=time.time()
     calculate_null_job(target_pods, repetition, NULL_STATE)
@@ -224,10 +245,6 @@ def calculate_jobs(target_pods:int, repetition: int):
     calculate_warm_job(target_pods, repetition)
     timestamps["warm_end"]=time.time()
 
-    timestamps["cold_start"]=time.time()
-    calculate_cold_job(target_pods, repetition)
-    timestamps["cold_end"]=time.time()
-
     timestamps["curl_coldstart_start"]=time.time()
     create_request_thread(target_pods)
     jobs_status[COLD_START_PROCESSING] = True
@@ -240,18 +257,54 @@ def calculate_jobs(target_pods:int, repetition: int):
     calculate_active_job(target_pods, repetition)
     timestamps["active_end"]=time.time()
 
-    time.sleep(2)
+    timestamps["cold_start"]=time.time()
+    calculate_cold_job(target_pods, repetition)
+    timestamps["cold_end"]=time.time()
 
-    timestamps["delete_start"]=time.time()
-    calculate_delete_job(target_pods, repetition)
-    timestamps["delete_end"]=time.time()
+    timestamps["update_config_start"]=time.time()
+    multiservice_pods.config_replicas(target_pods, INSTANCE, DETECTION_IMAGE)
+    timestamps["update_config_end"]=time.time()
 
-    timestamps["empty_after_delete_start"]=time.time()
-    jobs_status[NULL_PROCESSING] = True
-    calculate_null_job(target_pods, repetition,"empty:after_delete")
-    timestamps["empty_after_delete_end"]=time.time()
+    timestamps["update_config_coldstart_start"]=time.time()
+    multiservice_pods.deploy_pods()
+    jobs_status[COLD_START_PROCESSING] = True
+    calculate_cold_start_job(target_pods, repetition, "cold_start:update_config")
+    timestamps["update_config_coldstart_end"]=time.time()
 
-    print("Measurement finished.")
+    timestamps["warm_after_update_start"]=time.time()
+    jobs_status[WARM_PROCESSING] = True
+    calculate_warm_job(target_pods, repetition)
+    timestamps["warm_after_update_end"]=time.time()
+
+    timestamps["warm_delete_start"]=time.time()
+    calculate_delete_job(target_pods, repetition, "warm_delete")
+    timestamps["warm_delete_end"]=time.time()
+
+    print("-----------WARM DELETE END--------------")
+    time.sleep(30)
+
+    # ROUND 2: COLD DELETE
+    print("-----------COLD DELETE START--------------")
+    multiservice_pods.update_replicas(target_pods, INSTANCE, DETECTION_IMAGE)
+
+    timestamps["coldstart2_start"]=time.time()
+    multiservice_pods.deploy_pods()
+    jobs_status[COLD_START_PROCESSING]=True
+    calculate_cold_start_job(target_pods, repetition, COLD_START_STATE)
+    timestamps["coldstart2_end"]=time.time()
+
+    timestamps["warm_to_cold_start"]=time.time()
+    calculate_warm_to_cold_job(target_pods, repetition)
+    timestamps["warm_to_cold_end"]=time.time()
+
+    time.sleep(10)
+
+    timestamps["cold_delete_start"]=time.time()
+    jobs_status[DELETE_PROCESSING]=True
+    calculate_delete_job(target_pods, repetition, "cold_delete")
+    timestamps["cold_delete_end"]=time.time()
+
+    print("Measurement revert finished.")
     print("Saving timestamps..")
     timestamps_to_file(target_pods, repetition)
     print("Done")
@@ -265,14 +318,14 @@ if __name__ == "__main__":
     call: python3 main.py [COMMAND] [TARGET_PODS] [MINUTES_WARM] 
     """
     target_pods_scale = sys.argv[2]
-    ACTIVE_CALCULATION_TIME = sys.argv[3]
+    WARM_CALCULATION_TIME = sys.argv[3]
+    COLD_CALCULATION_TIME = sys.argv[3]
+    NULL_CALCULATION_TIME = sys.argv[3]
     repeat_time = sys.argv[4]
     INSTANCE = sys.argv[5]
     TARGET_VIDEO = sys.argv[6]
     DETECTION_IMAGE = sys.argv[7]
-    NULL_CALCULATION_TIME = sys.argv[8]
-    COLD_CALCULATION_TIME = sys.argv[3]
-    CALCULATION_TYPE = sys.argv[9]
+    CALCULATION_TYPE = sys.argv[8]
     if sys.argv[1] == "master":
         # Call to source code at pi4 
         if INSTANCE == "pi4":
@@ -282,7 +335,8 @@ if __name__ == "__main__":
             p0=Process(target=start_pi4, args=(RUN_UMMETER_AT_PI4_CMD.format(int(target_pods_scale), repeat_time, TARGET_VIDEO, generate_file_time), ))
         print("Start calculate job on {}".format(INSTANCE))
         POD_EXISTED = get_pods_existed()
-        p1=Process(target=calculate_jobs, args=(int(target_pods_scale), repeat_time, ), daemon = True)
+
+        p1=Process(target=calculate_revert_job, args=(int(target_pods_scale), repeat_time, ), daemon = True)
         p0.start()
         time.sleep(8)
         p1.start()

@@ -63,8 +63,8 @@ DATA_UMMETER_FILE_DIRECTORY = DATA_DIRECTORY + DATA_UMMETER_FOLDER + SLASH + DAT
 TIMESTAMP_DATA_FILE_DIRECTORY = DATA_DIRECTORY + SERVER_FOLDER + SLASH + TIMESTAMP_FILENAME
 PULLING_TIME_DATA_FILE_DIRECTORY = DATA_DIRECTORY + PULLING_TIME_FOLDER + SLASH + DATA_PULLING_IMAGE_FILENAME
 
-DATA_PROMETHEUS_FILE_DIRECTORY = "/home/controller/knative-caculation/data/{}/data_prom_target_pod_{}_repeat_time_{}_video_{}_{}_{}.csv"
-DATA_TIMESTAMP_FILE_DIRECTORY = "/home/controller/knative-caculation/data/timestamp/{}/data_timestamp_target_pod_{}_repeat_time_{}_video_{}_{}_{}.csv"
+DATA_PROMETHEUS_FILE_DIRECTORY = "/home/controller/knative-caculation/data/{}/{}/data_prom_target_pod_{}_repeat_time_{}_video_{}_{}_{}.csv"
+DATA_TIMESTAMP_FILE_DIRECTORY = "/home/controller/knative-caculation/data/timestamp/{}/{}/data_timestamp_target_pod_{}_repeat_time_{}_video_{}_{}_{}.csv"
 
 # COMMAND
 START_UMMETER_CMD = '/usr/bin/python3 /home/controller/knative-caculation/usbmeter.py --addr 00:16:A5:00:0F:65 --out /home/controller/knative-caculation/data/data_ummeter/data_ummeter_{}_{} --time {}'
@@ -91,6 +91,7 @@ COLD_AFTER_DEPLOY_PROCESSING = "cold_after_deploy"
 COLD_TO_WARM_PROCESSING = "cold_to_warm_processing"
 COLD_START_PROCESSING = "cold_start_processing"
 WARM_PROCESSING = "warm_processing"
+WARM_TO_COLD_PROCESSING = "warm_to_cold_processing"
 ACTIVE_PROCESSING = "active_processing"
 DELETE_PROCESSING = "delete_processing"
 
@@ -98,12 +99,13 @@ COLD_JOB = "cold"
 COLD_AFTER_DEPLOY_JOB = "cold_after_deploy"
 COLD_TO_WARM = "cold_to_warm"
 WARM_JOB = "warm"
+WARM_TO_COLD_JOB = "warm_to_cold"
 ACTIVE_JOB = "active"
 DELETE_JOB = "delete"
 
 ########################## Rebuild ######################
 # State
-NULL_STATE = "begin"
+NULL_STATE = "empty"
 COLD_START_STATE = "cold_start"
 WARM_STATE = "warm"
 COLD_STATE = "cold"

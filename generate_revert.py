@@ -6,9 +6,8 @@ from constants import SERVER_USER
 if __name__ == "__main__":
 
     # revert_lifecircle
-    calculation_type = "life_circle"
-    active_status_seconds = 100
-    null_status_seconds = 30
+    calculation_type = "revert_lifecircle"
+    null_cold_warm_status_seconds = 30
     target_pods_scale = [4] 
     repeat_time = 3
     instance = "pi4"
@@ -24,6 +23,6 @@ if __name__ == "__main__":
         for rep in range(repeat_time, repeat_time + 1, 1):
             print("Target pod: {}, Repeat time: {}/{}, Instance: {}, Target video: {}, Type: {}".format(
                 target_pod,rep,repeat_time,instance,target_video,calculation_type))
-            cmd = '/usr/bin/python3 /home/controller/knative-caculation/main_rebuild_2.py master {} {} {} {} {} {} {} {}>> log.txt'.format(
-                str(target_pod), str(active_status_seconds), str(rep), str(instance), str(target_video), str(detection_image), str(null_status_seconds), str(calculation_type))
+            cmd = '/usr/bin/python3 /home/controller/knative-caculation/main_revert.py master {} {} {} {} {} {} {}>> log.txt'.format(
+                str(target_pod), str(null_cold_warm_status_seconds), str(rep), str(instance), str(target_video), str(detection_image), str(calculation_type))
             process = subprocess.run(cmd, shell=True, stdout=subprocess.PIPE)
